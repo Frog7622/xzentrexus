@@ -927,15 +927,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       8. LEGAL INFORMATION MODALS (IMPRESSUM & DATENSCHUTZ)
+       8. LEGAL INFORMATION MODALS (IMPRESSUM, DATENSCHUTZ, SHOP-INFO)
        ========================================================================== */
     const impressumLink = document.getElementById('impressum-link');
     const datenschutzLink = document.getElementById('datenschutz-link');
+    const shopInfoLink = document.getElementById('shop-info-link');
+    
     const impressumModal = document.getElementById('impressum-modal');
     const datenschutzModal = document.getElementById('datenschutz-modal');
+    const shopInfoModal = document.getElementById('shop-info-modal');
     
     const closeImpressumModal = document.getElementById('close-impressum-modal');
     const closeDatenschutzModal = document.getElementById('close-datenschutz-modal');
+    const closeShopInfoModal = document.getElementById('close-shop-info-modal');
 
     if (impressumLink && impressumModal) {
         impressumLink.addEventListener('click', (e) => {
@@ -968,6 +972,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (datenschutzModal) {
         datenschutzModal.querySelector('.modal-overlay').addEventListener('click', () => {
             datenschutzModal.classList.remove('open');
+        });
+    }
+
+    if (shopInfoLink && shopInfoModal) {
+        shopInfoLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            shopInfoModal.classList.add('open');
+        });
+    }
+    if (closeShopInfoModal) {
+        closeShopInfoModal.addEventListener('click', () => {
+            shopInfoModal.classList.remove('open');
+        });
+    }
+    if (shopInfoModal) {
+        shopInfoModal.querySelector('.modal-overlay').addEventListener('click', () => {
+            shopInfoModal.classList.remove('open');
         });
     }
 
