@@ -1176,11 +1176,13 @@ button, input, textarea {
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-    transition: transform 0.5s ease;
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    cursor: zoom-in;
 }
 
 .product-slide:hover .cd-mockup {
     transform: scale(1.03);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 25px rgba(0, 212, 212, 0.4), 0 0 45px rgba(0, 212, 212, 0.2);
 }
 
 .slider-arrow {
@@ -1927,14 +1929,54 @@ button, input, textarea {
 }
 
 /* Lightbox Modal overrides */
+/* Lightbox Modal overrides */
 .lightbox-content {
     position: relative;
     z-index: 10;
     max-width: 90vw;
-    max-height: 80vh;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.lightbox-viewer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 900px;
+    max-height: 75vh;
+}
+
+.lightbox-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    z-index: 15;
+}
+
+.lightbox-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.lightbox-dot:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.lightbox-dot.active {
+    background: var(--color-teal);
+    box-shadow: var(--shadow-teal);
+    width: 24px;
+    border-radius: 6px;
 }
 
 .lightbox-img {
@@ -1944,21 +1986,62 @@ button, input, textarea {
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    transition: transform 0.3s ease;
 }
 
-.lightbox-caption {
-    margin-top: 1rem;
-    color: #fff;
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    text-align: center;
+/* Fancy Glowing Animations */
+@keyframes lightboxGlowIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.97);
+        filter: drop-shadow(0 0 0 rgba(0, 212, 212, 0)) brightness(0.95);
+        box-shadow: 0 10px 40px rgba(0,0,0,0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.005);
+        filter: drop-shadow(0 0 35px rgba(0, 212, 212, 0.5)) brightness(1.08);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.85), 0 0 45px rgba(0, 212, 212, 0.4);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 rgba(0, 212, 212, 0)) brightness(1);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    }
 }
+
+.lightbox-img.animate-glow {
+    animation: lightboxGlowIn 1s ease-in-out forwards;
+}
+
+@keyframes clickFlashGlow {
+    0% {
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 35px rgba(0, 212, 212, 0.65), 0 0 65px rgba(0, 212, 212, 0.35);
+        transform: scale(0.975);
+    }
+    100% {
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        transform: scale(1);
+    }
+}
+
+.cd-mockup.clicked-glow {
+    animation: clickFlashGlow 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 
 .lightbox-close {
     position: absolute;
     top: -2.5rem;
     right: 0;
 }
+
+
 
 /* Cart Panel (Slide Out) */
 .cart-panel-overlay {

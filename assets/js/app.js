@@ -8,6 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
         lucide.createIcons();
     }
 
+    // Initialize Click and Exit Sounds
+    const clickAudio = new Audio('assets/music/click.wav');
+    clickAudio.volume = 0.8; // Increased volume for clearer feedback
+
+    const exitAudio = new Audio('assets/music/exit.wav');
+    exitAudio.volume = 0.8; // Increased volume for clearer feedback
+
+    function playClickSound() {
+        clickAudio.currentTime = 0;
+        clickAudio.play().catch(err => {
+            console.log('Audio playback prevented by autoplay policy:', err);
+        });
+    }
+
+    function playExitSound() {
+        exitAudio.currentTime = 0;
+        exitAudio.play().catch(err => {
+            console.log('Audio playback prevented by autoplay policy:', err);
+        });
+    }
+
     // Dynamic Copyright Year
     const yearSpan = document.getElementById('current-year');
     if (yearSpan) {
@@ -827,24 +848,108 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       6. PORTFOLIO LIGHTBOX SYSTEM
+       6. PORTFOLIO & PRODUCT GALLERY LIGHTBOX SYSTEM
        ========================================================================== */
     const portfolioItems = document.querySelectorAll('.portfolio-item');
+    const productMockups = document.querySelectorAll('.cd-mockup');
     const lightboxModal = document.getElementById('lightbox-modal');
     const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxCaption = document.getElementById('lightbox-caption');
     const closeLightboxModal = document.getElementById('close-lightbox-modal');
+    const lightboxDotsContainer = document.getElementById('lightbox-dots');
 
-    portfolioItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const img = item.querySelector('.portfolio-img');
-            const title = item.querySelector('.portfolio-item-title').textContent;
-            
-            if (img && lightboxModal) {
-                lightboxImg.src = img.src;
-                lightboxCaption.textContent = title;
-                lightboxModal.classList.add('open');
+    let activeGallery = [];
+    let activeIndex = 0;
+
+    function openLightbox(imagesList, index) {
+        activeGallery = Array.from(imagesList);
+        activeIndex = index;
+        
+        // Build navigation dots
+        if (lightboxDotsContainer) {
+            lightboxDotsContainer.innerHTML = '';
+            if (activeGallery.length > 1) {
+                activeGallery.forEach((_, i) => {
+                    const dot = document.createElement('span');
+                    dot.className = 'lightbox-dot';
+                    if (i === activeIndex) dot.classList.add('active');
+                    dot.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        playClickSound();
+                        activeIndex = i;
+                        updateLightboxImage();
+                    });
+                    lightboxDotsContainer.appendChild(dot);
+                });
             }
+        }
+        
+        updateLightboxImage();
+        if (lightboxModal) {
+            lightboxModal.classList.add('open');
+        }
+    }
+
+    function updateLightboxImage() {
+        if (activeGallery.length === 0 || !lightboxImg) return;
+        
+        const currentImg = activeGallery[activeIndex];
+        
+        // Remove animation class and trigger reflow to restart animation
+        lightboxImg.classList.remove('animate-glow');
+        void lightboxImg.offsetWidth; // Force reflow
+        
+        // Update source
+        lightboxImg.src = currentImg.src || currentImg.querySelector('img').src;
+        
+        // Add animation class
+        lightboxImg.classList.add('animate-glow');
+        
+        // Update active dot indicators
+        if (lightboxDotsContainer) {
+            const dots = lightboxDotsContainer.querySelectorAll('.lightbox-dot');
+            dots.forEach((dot, i) => {
+                if (i === activeIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+    }
+
+    function nextLightboxImage() {
+        if (activeGallery.length <= 1) return;
+        activeIndex = (activeIndex + 1) % activeGallery.length;
+        updateLightboxImage();
+    }
+
+    function prevLightboxImage() {
+        if (activeGallery.length <= 1) return;
+        activeIndex = (activeIndex - 1 + activeGallery.length) % activeGallery.length;
+        updateLightboxImage();
+    }
+
+    // Attach portfolio click listeners
+    portfolioItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+            const allPortfolioImgs = Array.from(document.querySelectorAll('.portfolio-item img'));
+            openLightbox(allPortfolioImgs, index);
+        });
+    });
+
+    // Attach product mockup click listeners
+    productMockups.forEach((img, index) => {
+        img.addEventListener('click', () => {
+            // Add click visual glow feedback
+            img.classList.add('clicked-glow');
+            setTimeout(() => {
+                img.classList.remove('clicked-glow');
+            }, 600);
+
+            // Open lightbox after a tiny delay to let the click animation play
+            setTimeout(() => {
+                openLightbox(productMockups, index);
+            }, 250);
         });
     });
 
@@ -859,6 +964,17 @@ document.addEventListener('DOMContentLoaded', () => {
             lightboxModal.classList.remove('open');
         });
     }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (lightboxModal && lightboxModal.classList.contains('open')) {
+            if (e.key === 'ArrowRight') {
+                nextLightboxImage();
+            } else if (e.key === 'ArrowLeft') {
+                prevLightboxImage();
+            }
+        }
+    });
 
     /* ==========================================================================
        7. CONTACT FORM HANDLING
@@ -1000,6 +1116,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cartPanel && cartPanel.classList.contains('open')) {
                 toggleCartPanel();
             }
+        }
+    });
+
+    /* ==========================================================================
+       10. GLOBAL CLICK & EXIT SOUND EFFECTS - EVENT LISTENER
+       ========================================================================== */
+    document.addEventListener('click', (e) => {
+        // Check if it's an exit/close interaction first
+        const isExitElement = e.target.closest('#brand-logo, .modal-close, .close-cart-btn, .modal-overlay, .cart-panel-overlay');
+        if (isExitElement) {
+            playExitSound();
+            return; // Exit early, do not play the standard click sound
+        }
+
+        // Otherwise check if it's a standard interactive element
+        const interactive = e.target.closest('a, button, .dot, .lightbox-dot, .cd-mockup, .portfolio-item, .track-item, .play-btn, .timeline-container, .skip-btn');
+        if (interactive) {
+            // Exclude all controls belonging to the "Alte Releases" player (e.g., play/pause, skip buttons, timeline clicks)
+            if (interactive.closest('.custom-track-player')) {
+                return;
+            }
+            playClickSound();
         }
     });
 });
